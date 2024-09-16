@@ -502,15 +502,18 @@ php;
             $this->behavior_obj->ReportInstallLog(['msg'=>'查询数据库版本失败']);
             return DataReturn('查询数据库版本失败', -1);
         } else {
-            $mysql_version = str_replace('-log', '', $data[0]['version']);
-            if($mysql_version < $this->charset_type_list[$db_charset]['version'])
-            {
-                $msg = '数据库版本过低、需要>='.$this->charset_type_list[$db_charset]['version'].'、当前'.$mysql_version;
-                $this->behavior_obj->ReportInstallLog(['msg'=>$msg, 'mysql_version'=>$mysql_version]);
+            $version_string = $data[0]['version'];
+            $is_mariadb = stripos($version_string, 'mariadb') !== false;
+            $is_mysql = stripos($version_string, 'mysql') !== false;
+
+            if ($is_mariadb || $is_mysql) {
+                return DataReturn('success', 0);
+            } else {
+                $msg = '数据库类型不支持，仅支持MySQL或MariaDB';
+                $this->behavior_obj->ReportInstallLog(['msg'=>$msg, 'db_version'=>$version_string]);
                 return DataReturn($msg, -1);
             }
         }
-        return DataReturn('success', 0);
     }
 
     /**
